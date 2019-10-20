@@ -1,3 +1,5 @@
+import json
+import subprocess
 import time
 from datetime import datetime, timedelta
 import gphoto2 as gp
@@ -5,16 +7,9 @@ import signal, os, subprocess
 import random
 from PIL import Image, ImageDraw
 from twilio.rest import Client
-from ibm_watson import VisualRecognitionV4
-from ibm_cloud_sdk_code.authenticators import IAMAuthenticator
 import ibm_boto3
 from ibm_botocore.client import Config, ClientError
 
-authenticator = IAMAuthenticator('uroeHuBUwUoYBOhtAyO6HoFjXqC_WQpxaIndZowZgTGK')
-
-visual_recognition = VisualRecognitionV4(
-    version='2018-03-19',
-    authenticator=authenticator)
 
 COS_ENDPOINT = "https://s3.us-east.cloud-object-storage.appdomain.cloud"
 COS_API_KEY_ID = "Xc6U42S2I6wFDZ2sgAXqknqZqk1qAK6GRfWn-yzcszjo"
@@ -121,13 +116,13 @@ def multi_part_upload(bucket_name, item_name, file_path):
 # #     os.chdir(save_location)
 # #
 
-def recognize(image_file):
-    with open(image_file) as images_file:
-        classes = visual_recognition.analyze(
-            images_file,
-            threshold='0.6',
-            classifier_ids='forest-state_605719189').get_result()
-    print(json.dumps(classes, indent=2))
+# def recognize(image_file):
+#     with open(image_file) as images_file:
+#         classes = visual_recognition.analyze(
+#             images_file,
+#             threshold='0.6',
+#             classifier_ids='forest-state_605719189').get_result()
+#     print(json.dumps(classes, indent=2))
 
 
 
@@ -138,12 +133,26 @@ def captureImages(end_time):
         os.system("gphoto2 --capture-image-and-download --filename Images/" + picName)
         resize(picName)
         # visual reco
-        data = recognize("Output/"+picName)
+#         data = recognize("Output/"+picName)
         # determine if we should send message
         #
+        
+        returned_output = subprocess.check_output(['curl', '-s', '-X', 'POST', '-u', "apikey:uroeHuBUwUoYBOhtAyO6HoFjXqC_WQpxaIndZowZgTGk", '-F', "images_file=@Output/"+picName, '-F', "threshold=0.6", '-F', "classifier_ids=forest-state_605719189", "https://gateway.watsonplatform.net/visual-recognition/api/v3/classify?version=2018-03-19"])
+
+        classify = json.loads(returned_output)["images"][0]["classifiers"][0]["classes"][0]["class"]
         # send message
+        if classify == "fire":
+            #send message with body fire
+            send_message("There is a fire 🔥🔥🔥")
+            print("fire")
+        elif classify == "deforest":
+            #send message with body deforest
+            send_message("The forest is gone 😢😢😢")
+            print("deforest")
         
         # add text to image
+        
+        
         
         multi_part_upload('hackathon2019', picName, '/home/pi/Desktop/CUNY/Images/'+picName)
         time.sleep(2)
