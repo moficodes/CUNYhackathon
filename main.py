@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import gphoto2 as gp
 import signal, os, subprocess
 import random
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from twilio.rest import Client
 import ibm_boto3
 from ibm_botocore.client import Config, ClientError
@@ -24,22 +24,7 @@ cos = ibm_boto3.resource("s3",
                          config=Config(signature_version="oauth"),
                          endpoint_url=COS_ENDPOINT
 )
-# 
-# #shot_date = datetime.now().strftime("%Y-%m-%d")
-# 
-# def get_buckets():
-#     print("Retrieving list of buckets")
-#     try:
-#         buckets = cos.buckets.all()
-#         for bucket in buckets:
-#             print("Bucket Name: {0}".format(bucket.name))
-#     except ClientError as be:
-#         print("CLIENT ERROR: {0}\n".format(be))
-#     except Exception as e:
-#         print("Unable to retrieve list buckets: {0}".format(e))
-#         
-# get_buckets()
-# 
+
 def resize(input_file):
     
     image_Path_Input = '/home/pi/Desktop/CUNY/Images/'
@@ -56,7 +41,7 @@ def resize(input_file):
    
 
     im.save(image_Path_Output + input_file)
-#
+
 
 def send_message(message_body):
     account_sid = "AC30668d739d5127e3d11129ae7b73b51e"
@@ -71,6 +56,8 @@ def send_message(message_body):
         )
 
     print(message.sid)
+    
+    
 
 def multi_part_upload(bucket_name, item_name, file_path):
     try:
@@ -95,35 +82,6 @@ def multi_part_upload(bucket_name, item_name, file_path):
         print("CLIENT ERROR: {0}\n".format(be))
     except Exception as e:
         print("Unable to complete multi-part upload: {0}".format(e))
-#             
-# 
-#             
-# 
-# # 
-# 
-# # 
-# # 
-# # 
-# 
-# save_location = "/home/pi/Desktop/CUNY/" 
-# # 
-# # def createSaveFolder():
-# #     try:
-# #         os.makedirs(save_location)
-# #         os.chdir(save_location)
-# #     except:
-# #         print("Failed to create the new directory")
-# #     os.chdir(save_location)
-# #
-
-# def recognize(image_file):
-#     with open(image_file) as images_file:
-#         classes = visual_recognition.analyze(
-#             images_file,
-#             threshold='0.6',
-#             classifier_ids='forest-state_605719189').get_result()
-#     print(json.dumps(classes, indent=2))
-
 
 
 def captureImages(end_time):
@@ -132,11 +90,7 @@ def captureImages(end_time):
         picName = datetime.now().strftime("%H:%M:%S") + str(random.randint(1,999)) + ".jpg" 
         os.system("gphoto2 --capture-image-and-download --filename Images/" + picName)
         resize(picName)
-        # visual reco
-#         data = recognize("Output/"+picName)
-        # determine if we should send message
-        #
-        
+
         returned_output = subprocess.check_output(['curl', '-s', '-X', 'POST', '-u', "apikey:uroeHuBUwUoYBOhtAyO6HoFjXqC_WQpxaIndZowZgTGk", '-F', "images_file=@Output/"+picName, '-F', "threshold=0.6", '-F', "classifier_ids=forest-state_605719189", "https://gateway.watsonplatform.net/visual-recognition/api/v3/classify?version=2018-03-19"])
 
         classify = json.loads(returned_output)["images"][0]["classifiers"][0]["classes"][0]["class"]
@@ -164,44 +118,6 @@ def captureImages(end_time):
         os.system("rm Images/*")
         os.system("rm Output/*")
         time.sleep(1)
-#         
-# # 
-# #         
-# #         
-# #         
-# # # def framesToVideo(input_List, output_File_Name, fourcc, fps, size):
-# # #     #output video writer object
-# # #     out = cv2.VideoWriter(output_File_Name, fourcc, fps, size)
-# # #     
-# # #     num_Frames = len(input_List)
-# # #     
-# # #     for i in range(num_Frames):
-# # #         base_name = 
-# #     
-# #     
-# #     
-# #     
-# # createSaveFolder()
-# captureImages(datetime.now() + timedelta(seconds = 120))
-# 
-# # for name in picsArray:
-# #     
-# #     print(name)
-# 
-# 
-# 
-# 
-# 
-#
-# def get_bucket_contents(bucket_name):
-#     print("Retrieving bucket contents from: {0}".format(bucket_name))
-#     try:
-#         files = cos.Bucket(bucket_name).objects.all()
-#         for file in files:
-#             print("Item: {0} ({1} bytes).".format(file.key, file.size))
-#     except ClientError as be:
-#         print("CLIENT ERROR: {0}\n".format(be))
-#     except Exception as e:
-#         print("Unable to retrieve bucket contents: {0}".format(e))
-#         
-# get_bucket_contents('hackathon2019')
+
+captureImages(datetime.now() + timedelta(seconds = 120))
+
