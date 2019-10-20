@@ -151,7 +151,12 @@ def captureImages(end_time):
             print("deforest")
         
         # add text to image
-        
+        img = Image.open("Output/"+picName)
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.truetype("CaviarDreams.ttf", 48)
+        draw.text((0, 0),classify,(255,255,255),font=font)
+        img.save("Output/"+picName)
+
         
         
         multi_part_upload('hackathon2019', picName, '/home/pi/Desktop/CUNY/Images/'+picName)
