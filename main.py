@@ -27,8 +27,8 @@ cos = ibm_boto3.resource("s3",
 
 def resize(input_file):
     
-    image_Path_Input = '/home/pi/Desktop/CUNY/Images/'
-    image_Path_Output = '/home/pi/Desktop/CUNY/Output/'
+    image_Path_Input = '/home/pi/Desktop/CUNYhackathon/Images/'
+    image_Path_Output = '/home/pi/Desktop/CUNYhackathon/Output/'
 
     
 
@@ -53,7 +53,7 @@ def send_message(message_body):
         body = message_body,
         from_ = "+12027592241",
         to = "+17174303482"
-        )
+    )
 
     print(message.sid)
     
@@ -93,16 +93,19 @@ def captureImages(end_time):
 
         returned_output = subprocess.check_output(['curl', '-s', '-X', 'POST', '-u', "apikey:uroeHuBUwUoYBOhtAyO6HoFjXqC_WQpxaIndZowZgTGk", '-F', "images_file=@Output/"+picName, '-F', "threshold=0.6", '-F', "classifier_ids=forest-state_605719189", "https://gateway.watsonplatform.net/visual-recognition/api/v3/classify?version=2018-03-19"])
 
-        classify = json.loads(returned_output)["images"][0]["classifiers"][0]["classes"][0]["class"]
-        # send message
-        if classify == "fire":
-            #send message with body fire
-            send_message("There is a fire 🔥🔥🔥")
-            print("fire")
-        elif classify == "deforest":
-            #send message with body deforest
-            send_message("The forest is gone 😢😢😢")
-            print("deforest")
+        json_data = json.loads(returned_output)
+        classify = "unclassified"
+        if len(json_data["images"][0]["classifiers"][0]["classes"] > 0 :  
+          classify = json_data["images"][0]["classifiers"][0]["classes"][0]["class"]
+          # send message
+          if classify == "fire":
+              #send message with body fire
+              send_message("There is a fire !!!")
+              print("fire")
+          elif classify == "deforest":
+              #send message with body deforest
+              send_message("The forest is gone :( :( :(")
+              print("deforest")
         
         # add text to image
         img = Image.open("Output/"+picName)
@@ -113,7 +116,7 @@ def captureImages(end_time):
 
         
         
-        multi_part_upload('hackathon2019', picName, '/home/pi/Desktop/CUNY/Images/'+picName)
+        multi_part_upload('hackathon2019', picName, '/home/pi/Desktop/CUNYhackathon/Images/'+picName)
         time.sleep(2)
         os.system("rm Images/*")
         os.system("rm Output/*")
